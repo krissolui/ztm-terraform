@@ -1,0 +1,16 @@
+terraform {
+}
+
+locals {
+  time = timestamp()
+}
+
+output "time" {
+  value = local.time
+  description = "Current date and time"
+}
+
+output "formattime" {
+  value = formatdate("MMM DD, YYYY hh:mm:ss ZZZ", local.time)
+  description = "Formatted current date and time"
+}

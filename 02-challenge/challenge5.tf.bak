@@ -1,0 +1,43 @@
+terraform {
+ required_providers {
+   aws = {
+     source  = "hashicorp/aws"
+     version = "~> 3.0"
+   }
+ }
+}
+
+# Configuring the AWS Provider
+# !!Use your own access and secret keys!!
+provider "aws" {
+    region = "us-west-1"
+    access_key = "AKIA52LJEQNMWCTT53NX"
+    secret_key = "GAqkjt7DUbpIYA8EJZ7XzsI5jdYDsK+Z44OpRS3x"
+}
+
+
+# Creating a new VPC
+resource "aws_vpc" "production" {
+  cidr_block = "10.0.0.0/16"
+
+  tags = {
+    "Name" = "Production VPC"
+  }
+}
+
+
+# Creating a subnet in the VPC
+resource "aws_subnet" "webapps"{
+  vpc_id = aws_vpc.production.id
+  cidr_block = "10.0.0.0/24"
+  availability_zone = "eu-central-1a"
+  
+  tags = {
+    "Name" = "Web Applictations Subnet"
+  }
+}
+
+/*
+    Challenge: Why will applying this configuration fail?
+    Ans: The "availability_zone" of "aws_subnet.webapps" does not match with specified AWS Region
+*/

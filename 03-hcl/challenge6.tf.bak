@@ -1,0 +1,81 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+# 0. Configure the AWS Provider
+# !!Use your own access and secret keys!!
+provider "aws" {
+  region = "us-west-1"
+}
+
+
+# 1. Create a VPC
+resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
+  tags = {
+    "Name" = "Production VPC"
+  }
+}
+
+# 2. Create a subnet in the VPC
+resource "aws_subnet" "web" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.10.0/24"
+  availability_zone = "us-west-1b"
+  tags = {
+    "Name" = "Web subnet"
+  }
+}
+
+# 3. Create an Internet Gateway Resource
+resource "aws_internet_gateway" "my_web_igw" {
+  vpc_id = aws_vpc.main.id
+  tags = {
+    "Name" = "IGW"
+  }
+}
+
+# 4. Associate the IGW to the default RT
+resource "aws_default_route_table" "main_vpc_default_rt" {
+  default_route_table_id = aws_vpc.main.default_route_table_id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.my_web_igw.id
+  }
+  tags = {
+    "Name" = "my-default-rt"
+  }
+}
+
+# 5. Setting the default Security Group
+resource "aws_default_security_group" "default_sec_group" {
+  vpc_id = aws_vpc.main.id
+
+  dynamic "ingress" {
+    for_each = [20, 21, 22, 23, 80, 110, 143, 443, 995, 8080, 10100]
+    iterator = iport
+    content {
+      from_port   = iport.value
+      to_port     = iport.value
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    "Name" = "Default Security Group"
+  }
+}

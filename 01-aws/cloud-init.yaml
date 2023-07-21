@@ -1,0 +1,30 @@
+#cloud-config
+# Adding groups to the system
+groups:
+  - devops: [root,sys]
+  - hashicorp
+
+# Adding users to the system. Users are added after groups are added
+users:
+  - default
+  - name: terraform
+    gecos: terraform
+    shell: /bin/bash
+    primary_group: hashicorp
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users, admin
+    lock_passwd: false
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC2IF48aWORS2p1cHQVslDSENaRgTkKO++JKYyFf+5RiAhd0bM89gAqOR7EghYBjOe+E3K6mi87zbh+Z+Qm5vx4j00JkYSJdsAvVCaV+lIcEIcgt9FCDSD44s33wxof89PzGnTItbcJoUQNkk7GHAaaOUUdYWTpcmtLzLLk3U7rjr9//v9a5voInoB9+/Z+uZdz+H3djLnD22ybGmJl3ZHcZ/nkp7kIhElFTDMj1tbGCrJ88QeTUjkRdZDIFwyjIxP7MuDvpl54Vxv3NQAws9vKyVSrBGxDmzZa0YtmfRKSvT+BdrLaccKCHqMqhlgLvAKJXfuz5POEtpj0qJkP91YJ RSA key created for Terraform
+
+# Downloading and installing packages
+packages:
+  - httpd
+  - docker
+
+# Running commands
+runcmd:
+  - sudo systemctl start httpd
+  - sudo systemctl start docker
+  - sudo usermod -aG docker ec2-user
+  - sudo docker run -d -p 8080:80 nginx

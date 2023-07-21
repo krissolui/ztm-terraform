@@ -1,0 +1,56 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+# !!Use your own access and secret keys!!
+provider "aws" {
+  region = "us-west-1"
+  #   access_key = "AKIA52LJEQNMWCTT53NX"
+  #   secret_key = "GAqkjt7DUbpIYA8EJZ7XzsI5jdYDsK+Z44OpRS3x"
+}
+
+data "aws_ami" "aws_linux_2" {
+  owners = [ "amazon" ]
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-kernel-*-x86_64-gp2"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+}
+
+resource "aws_instance" "server" {
+  ami           = data.aws_ami.aws_linux_2.id
+  instance_type = "t2.micro"
+  count         = 2
+}
+
+output "ec2_public_ip_1" {
+  value       = aws_instance.server[0].public_ip
+  description = "Public IP of EC2 instance 1"
+}
+
+output "ec2_public_ip_2" {
+  value       = aws_instance.server[1].public_ip
+  description = "Public IP of EC2 instance 2"
+}
+
+output "ec2_private_ip_1" {
+  value       = aws_instance.server[0].private_ip
+  description = "Private IP of EC2 instance 1"
+}
+
+output "ec2_private_ip_2" {
+  value       = aws_instance.server[1].private_ip
+  description = "Private IP of EC2 instance 2"
+}
